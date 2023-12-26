@@ -24,6 +24,7 @@
 // New transactions
 .decl recv_transferFrom(from: address, to: address, amount: uint)
 .decl increaseAllowance(p: address, s: address, n:uint)
+.decl approve(p: address, s: address, n:uint)
 .decl recv_approve(s: address, n:uint)
 
 .decl addPauser(p: address, b: bool)[0]
@@ -105,7 +106,11 @@ transfer(o,r,n) :- transferFrom(o,r,_,n).
 .public recv_increaseAllowance
 .public recv_decreaseAllowance
 
-increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+
+// increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+approve(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+increaseAllowance(o,s,d) :- approve(o,s,d).
+
 increaseAllowance(o,s,n) :- recv_increaseAllowance(s,n), msgSender(o).
 decreaseAllowance(o,s,n) :- recv_decreaseAllowance(s,n), msgSender(o), allowance(o,s,m), m>=n.
 

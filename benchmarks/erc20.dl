@@ -20,6 +20,7 @@
 // New transactions
 .decl recv_transferFrom(from: address, to: address, amount: uint)
 .decl increaseAllowance(p: address, s: address, n:uint)
+.decl approve(p: address, s: address, n:uint)
 .decl recv_approve(s: address, n:uint)
 
 // Interfaces
@@ -65,7 +66,10 @@ transferFrom(o,r,s,n) :- recv_transferFrom(o,r,n),
                     msgSender(s), allowance(o,s,k), k>=n.
 transfer(o,r,n) :- transferFrom(o,r,_,n).
 
-increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+
+approve(o,s,d):- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+increaseAllowance(o,s,d) :- approve(o,s,d).
+// increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
 
 .decl allowanceTotal(o:address, s:address, m:uint)[0,1]
 .decl spentTotal(o:address, s:address, m:uint)[0,1]

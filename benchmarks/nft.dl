@@ -23,6 +23,10 @@
 .decl setApproval(o:address, tokenId:uint, p:address, b: bool)[0,1,2]
 .decl setApprovedForAll(owner:address, operator:address, b: bool)[0,1]
 .decl transfer(tokenId: uint, from: address, to: address, time: uint)
+.decl mint(tokenId: uint, to: address, time: uint)
+.decl burn(tokenId: uint, from: address, time: uint)
+.decl transferFrom(tokenId: uint, from: address, to: address, time: uint)
+.decl setApprovalForAll(owner:address, operator:address, b: bool)[0,1]
 
 // Interfaces
 .public recv_mint
@@ -45,16 +49,29 @@ approval(o,tokenId,p,b) :- setApproval(o,tokenId,p,b).
 isApprovedForAll(p,o,b) :- setApprovedForAll(p,o,b).
 
 // Transactions
-transfer(tokenId,0,to,time) :- recv_mint(tokenId,to), msgSender(s), owner(s),
-                               exists(tokenId,false), now(time), to!=0.
-transfer(tokenId,p,0,time) :- recv_burn(tokenId), ownerOf(tokenId,p), msgSender(s),
-                              owner(s), exists(tokenId,true), now(time).
+//transfer(tokenId,0,to,time) :- recv_mint(tokenId,to), msgSender(s), owner(s),
+//                               exists(tokenId,false), now(time), to!=0.
+mint(tokenId,to,time) :- recv_mint(tokenId,to), msgSender(s), owner(s),
+                                 exists(tokenId,false), now(time), to!=0.
+transfer(tokenId,0,to,time) :- mint(tokenId,to,time).
+//transfer(tokenId,p,0,time) :- recv_burn(tokenId), ownerOf(tokenId,p), msgSender(s),
+                             //owner(s), exists(tokenId,true), now(time).
+burn(tokenId,p,time) :- recv_burn(tokenId), ownerOf(tokenId,p), msgSender(s),
+                               owner(s), exists(tokenId,true), now(time).
+transfer(tokenId,p,0,time) :- burn(tokenId,p,time).
 transfer(tokenId,s,r,time) :- recv_transfer(r,tokenId), msgSender(s), ownerOf(tokenId,s),now(time), r!=0.
-transfer(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId), approved(tokenId,s,true),now(time), r!=0.
-transfer(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId),ownerOf(tokenId,s), r!=0,
-                                msgSender(o), isApprovedForAll(s,o,true), now(time).
+//transfer(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId), approved(tokenId,s,true),now(time), r!=0.
+transferFrom(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId), approved(tokenId,s,true),now(time), r!=0.
+transfer(tokenId,s,r,time) :- transferFrom(tokenId,s,r,time).
+//transfer(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId),ownerOf(tokenId,s), r!=0,
+//                                msgSender(o), isApprovedForAll(s,o,true), now(time).
+transferFrom(tokenId,s,r,time) :- recv_transferFrom(s,r,tokenId),ownerOf(tokenId,s), r!=0,
+                                  msgSender(o), isApprovedForAll(s,o,true), now(time).
+transfer(tokenId,s,r,time) :- transferFrom(tokenId,s,r,time).
 setApproval(o,tokenId,p,b) :- recv_setApproval(tokenId,p,b), msgSender(o), ownerOf(tokenId,o).
-setApprovedForAll(p,o,b) :- recv_setApprovalForAll(o,b), msgSender(p).
+//setApprovedForAll(p,o,b) :- recv_setApprovalForAll(o,b), msgSender(p).
+setApprovalForAll(p,o,b) :- recv_setApprovalForAll(o,b), msgSender(p).
+setApprovedForAll(p,o,b) :- setApprovalForAll(p,o,b).
 
 .decl latestTransfer(tokenId: uint, from: address, to: address, time: uint)[0]
 latestTransfer(tokenId,s,r,t) :- transfer(tokenId, s, r, t), t = max s: transfer(tokenId, _,_,s) .

@@ -133,7 +133,9 @@ transferFromWithoutFee(o,r,s,m) :- transferFromWithFee(o,r,s,f,n), m := n-f.
 transferFromWithoutFee(o,p,s,f) :- transferFromWithFee(o,r,s,f,_), owner(p).
 transferWithoutFee(o,r,n) :- transferFromWithoutFee(o,r,_,n).
 
-increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+approve(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
+increaseAllowance(o,s,d) :- approve(o,s,d).
+//increaseAllowance(o,s,d) :- recv_approve(s,n), msgSender(o), allowance(o,s,m), d:=n-m.
 
 .decl allowanceTotal(o:address, s:address, m:uint)[0,1]
 .decl spentTotal(o:address, s:address, m:uint)[0,1]

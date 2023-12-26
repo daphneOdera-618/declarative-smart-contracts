@@ -17,6 +17,7 @@
 .decl recv_transfer(tokenId: uint, to: address, amount: uint)
 .decl recv_transferFrom(tokenId: uint, from: address, to: address, amount: uint)
 .decl increaseAllowance(tokenId: uint, p: address, s: address, n:uint)
+.decl approve(tokenId: uint, p: address, s: address, n:uint)
 .decl recv_approve(tokenId: uint, s: address, n:uint)
 
 .decl recv_setApprovalForAll(operator: address, approved: bool)
@@ -76,7 +77,9 @@ transferFrom(t,o,r,s,n) :- recv_transferFrom(t,o,r,n),
                     msgSender(s), allowance(t,o,s,k), k>=n.
 transfer(t,o,r,n) :- transferFrom(t,o,r,_,n).
 
-increaseAllowance(t,o,s,d) :- recv_approve(t,s,n), msgSender(o), allowance(t,o,s,m), d:=n-m.
+approve(t,o,s,d) :- recv_approve(t,s,n), msgSender(o), allowance(t,o,s,m), d:=n-m.
+increaseAllowance(t,o,s,d) :- approve(t,o,s,d).
+//increaseAllowance(t,o,s,d) :- recv_approve(t,s,n), msgSender(o), allowance(t,o,s,m), d:=n-m.
 
 .decl allowanceTotal(tokenId: uint, o:address, s:address, m:uint)[0,1,2]
 .decl spentTotal(tokenId: uint, o:address, s:address, m:uint)[0,1,2]
